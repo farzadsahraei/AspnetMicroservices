@@ -4,7 +4,7 @@ using MongoDB.Driver;
 
 namespace Catalog.API.Repositories
 {
-    public class ProductRepository:IProductRepository
+    public class ProductRepository : IProductRepository
     {
         ICatalogContext _context;
 
@@ -15,12 +15,12 @@ namespace Catalog.API.Repositories
 
         public async Task<IEnumerable<Product>> GetProducts()
         {
-             return await  _context.Products.Find(p => true).ToListAsync();
+            return await _context.Products.Find(p => true).ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> GetProductByCategory(string category)
         {
-            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p=> p.Category,category);
+            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.Category, category);
             return await _context.Products.Find(filter).ToListAsync();
         }
 
@@ -36,19 +36,23 @@ namespace Catalog.API.Repositories
             return await _context.Products.Find(filter).ToListAsync();
         }
 
-        public Task CreateProduct(Product product)
+        public async Task CreateProduct(Product product)
         {
-            throw new NotImplementedException();
+            await _context.Products.InsertOneAsync(product);
         }
 
-        public Task<bool> DeleteProduct(Product product)
+        public async Task<bool> DeleteProduct(Product product)
         {
-            throw new NotImplementedException();
+            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.Id, product.Id);
+            DeleteResult deleteResult = await _context.Products.DeleteOneAsync(filter);
+            return deleteResult.IsAcknowledged && deleteResult.DeletedCount > 0;
         }
 
-        public Task<bool> UpdateProduct(Product product)
+        public async Task<bool> UpdateProduct(Product product)
         {
-            throw new NotImplementedException();
+            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.Id, product.Id);
+            ReplaceOneResult result = await _context.Products.ReplaceOneAsync(filter,product);
+            return result.IsAcknowledged && result.ModifiedCount > 0;
         }
     }
 }
